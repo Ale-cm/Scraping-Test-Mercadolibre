@@ -1,10 +1,12 @@
 package base;
 
-import com.aventstack.extentreports.ExtentReports;
-import com.aventstack.extentreports.reporter.ExtentSparkReporter;
+
+import com.aventstack.extentreports.MediaEntityBuilder;
+import com.aventstack.extentreports.service.ExtentTestManager;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.testng.ITestResult;
 import org.testng.annotations.*;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -19,8 +21,6 @@ import java.io.IOException;
 public class BaseTests  {
     private WebDriver driver;
     protected HomeMeli homeMeli;
-    protected  ExtentReports extent ;
-    protected ExtentSparkReporter spark;
 
     public String getScreenShoot() throws IOException {
         File source=((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
@@ -29,19 +29,18 @@ public class BaseTests  {
         return path;
     }
 
-    //por que base64 en caso de que sean 1000 tests de la otra forma se haria muy pesado. Para enviarse por mail por ejemplo.
-    public String getBase64() {
+    /**
+     *  por que base64 en caso de que sean 1000 tests de la otra forma se haria muy pesado. Para enviarse por mail por ejemplo.
+     *
+     */
+    private String getBase64() {
         return ((TakesScreenshot)this.driver).getScreenshotAs(OutputType.BASE64);
     }
 
-    @BeforeSuite
-    public void setUpSuite(){
-        extent = new ExtentReports();
-        spark = new ExtentSparkReporter("target/Spark/MeliReport.html");
-        extent.attachReporter(spark);
-
+    @DataProvider(name = "Authentication")
+    public static Object[][] pruductos() {
+        return new Object[][] { { "Zapatillas", "Test@123" }, { "Calsoncillo ", "Test@123" } };
     }
-
 
 
     @BeforeClass
@@ -55,6 +54,21 @@ public class BaseTests  {
 
         }
 
+
+        @AfterMethod
+        public synchronized void afterMethod(ITestResult result) {
+            switch (result.getStatus()) {
+                case ITestResult.FAILURE:
+                    ExtentTestManager.getTest(result).fail("ITestResult.FAILURE, event afterMethod",
+                            MediaEntityBuilder.createScreenCaptureFromBase64String(getBase64()).build());
+                    break;
+                case ITestResult.SKIP:
+                    ExtentTestManager.getTest(result).skip("ITestResult.SKIP, event afterMethod");
+                    break;
+                default:
+                    break;
+            }
+        }
     @AfterClass
     public void tearDown() {
         driver.close();
@@ -62,8 +76,5 @@ public class BaseTests  {
 
     }
 
-    @AfterSuite
-    public void TearDownSuite(){
-        extent.flush();
-    }
+
 }
