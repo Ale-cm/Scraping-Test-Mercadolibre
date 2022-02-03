@@ -36,7 +36,7 @@ public class BaseTests  {
     private String getBase64() {
         return ((TakesScreenshot)this.driver).getScreenshotAs(OutputType.BASE64);
     }
-
+//todo: Arreglar
     @DataProvider(name = "Authentication")
     public static Object[][] pruductos() {
         return new Object[][] { { "Zapatillas", "Test@123" }, { "Calsoncillo ", "Test@123" } };
@@ -46,7 +46,7 @@ public class BaseTests  {
     @BeforeClass
     public void setupClass() {
         WebDriverManager.chromedriver().setup();
-        // Exercise
+
         driver = new ChromeDriver();
         driver.get("https://www.mercadolibre.com.ar/");
         homeMeli = new HomeMeli(driver);
